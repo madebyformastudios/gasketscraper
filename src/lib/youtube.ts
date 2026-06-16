@@ -23,7 +23,7 @@ export function formatDuration(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-export async function searchYouTube(params: SearchRequest): Promise<Clip[]> {
+export async function searchYouTube(params: SearchRequest): Promise<{ clips: Clip[]; nextPageToken?: string }> {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) {
     throw new Error('YOUTUBE_API_KEY is not defined in the environment variables.');
@@ -59,6 +59,14 @@ export async function searchYouTube(params: SearchRequest): Promise<Clip[]> {
     }
   }
 
+  if (params.hd) {
+    searchUrl.searchParams.set('videoDefinition', 'high');
+  }
+
+  if (params.pageToken) {
+    searchUrl.searchParams.set('pageToken', params.pageToken);
+  }
+
   const searchRes = await fetch(searchUrl.toString());
   if (!searchRes.ok) {
     const errorText = await searchRes.text();
@@ -73,12 +81,13 @@ export async function searchYouTube(params: SearchRequest): Promise<Clip[]> {
   }
 
   const searchData = await searchRes.json();
+  const nextPageToken = searchData.nextPageToken;
   const videoIds = (searchData.items || [])
     .map((item: { id?: { videoId?: string } }) => item.id?.videoId)
     .filter((id?: string): id is string => Boolean(id));
 
   if (videoIds.length === 0) {
-    return [];
+    return { clips: [], nextPageToken };
   }
 
   // 2. Map videoIds to videos.list API request to enrich results
@@ -158,5 +167,5 @@ export async function searchYouTube(params: SearchRequest): Promise<Clip[]> {
     });
   }
 
-  return clips;
+  return { clips, nextPageToken };
 }

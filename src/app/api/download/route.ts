@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body: DownloadRequest = await req.json();
-    const { videoIds } = body;
+    const { videoIds, quality } = body;
 
     if (!videoIds || !Array.isArray(videoIds) || videoIds.length === 0) {
       return NextResponse.json(
@@ -55,6 +55,14 @@ export async function POST(req: NextRequest) {
     const writer = responseStream.writable.getWriter();
     const encoder = new TextEncoder();
 
+    // Map quality selector to corresponding yt-dlp format options
+    let formatString = 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best';
+    if (quality === '720p') {
+      formatString = 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[ext=720]/best';
+    } else if (quality === 'best available') {
+      formatString = 'bestvideo+bestaudio/best';
+    }
+
     // Perform downloads sequentially in the background
     (async () => {
       try {
@@ -70,7 +78,7 @@ export async function POST(req: NextRequest) {
             const filePath = await new Promise<string>((resolve, reject) => {
               const args = [
                 '-f',
-                'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+                formatString,
                 '-o',
                 '%(title)s [%(id)s].%(ext)s',
                 '--paths',

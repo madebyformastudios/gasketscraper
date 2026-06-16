@@ -15,15 +15,19 @@ export interface SearchRequest {
   duration?: 'any' | 'short' | 'medium' | 'long';
   uploadedWithin?: 'any' | 'year' | 'month';
   sort?: 'relevance' | 'date' | 'views';
+  hd?: boolean;
+  pageToken?: string;
 }
 
 export interface SearchResponse {
   clips: Clip[];
   cached: boolean;
+  nextPageToken?: string;
 }
 
 export interface DownloadRequest {
   videoIds: string[];
+  quality?: 'best (≤1080p)' | '720p' | 'best available';
 }
 
 export interface DownloadStatus {

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body: SearchRequest = await req.json();
-    const { query, duration, uploadedWithin, sort } = body;
+    const { query, duration, uploadedWithin, sort, hd, pageToken } = body;
 
     if (!query || typeof query !== 'string' || query.trim() === '') {
       return NextResponse.json(
@@ -28,24 +28,28 @@ export async function POST(req: NextRequest) {
       duration: duration || 'any',
       uploadedWithin: uploadedWithin || 'any',
       sort: sort || 'relevance',
+      hd: hd || false,
+      pageToken: pageToken || undefined,
     };
 
-    // Check Cache
-    const cachedClips = getCachedSearch(searchParams);
-    if (cachedClips !== null) {
+    // Check Cache (Now persistent on-disk cache)
+    const cachedResult = getCachedSearch(searchParams);
+    if (cachedResult !== null) {
       const response: SearchResponse = {
-        clips: cachedClips,
+        clips: cachedResult.clips,
+        nextPageToken: cachedResult.nextPageToken,
         cached: true,
       };
       return NextResponse.json(response);
     }
 
     // Cache Miss - Search YouTube
-    const clips = await searchYouTube(searchParams);
-    setCachedSearch(searchParams, clips);
+    const { clips, nextPageToken } = await searchYouTube(searchParams);
+    setCachedSearch(searchParams, clips, nextPageToken);
 
     const response: SearchResponse = {
       clips,
+      nextPageToken,
       cached: false,
     };
     return NextResponse.json(response);
