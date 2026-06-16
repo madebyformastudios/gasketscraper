@@ -283,51 +283,47 @@ export default function ClipFinder() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-100 selection:bg-purple-500 selection:text-white">
-      {/* Background ambient glows */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="flex flex-col min-h-screen bg-zinc-50 text-zinc-900 selection:bg-purple-500 selection:text-white">
       {/* Main Container */}
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 relative z-10 flex flex-col gap-8">
         
         {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-zinc-800/80 pb-6 gap-4">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-zinc-200 pb-6 gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-gradient-to-tr from-purple-600 to-indigo-600 rounded-xl shadow-lg shadow-purple-900/30">
+            <div className="p-2.5 bg-gradient-to-tr from-purple-600 to-indigo-600 rounded-xl shadow-md shadow-purple-200">
               <Tv className="w-6 h-6 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-zinc-100 to-zinc-400 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-zinc-900 to-zinc-700 bg-clip-text text-transparent">
                   Clip Finder
                 </h1>
-                <Badge variant="outline" className="bg-purple-950/30 border-purple-500/30 text-purple-400 font-mono text-xs px-2 py-0.5">
+                <Badge className="bg-purple-50 border border-purple-200 text-purple-700 font-mono text-xs px-2 py-0.5">
                   MVP
                 </Badge>
               </div>
-              <p className="text-sm text-zinc-400 mt-0.5">
+              <p className="text-sm text-zinc-550 mt-0.5">
                 Search and download clean source footage locally
               </p>
             </div>
           </div>
           
-          <div className="text-xs font-mono text-zinc-500 bg-zinc-900/50 border border-zinc-800/80 rounded-md px-3 py-1.5 backdrop-blur-sm">
-            Status: <span className="text-emerald-400 font-semibold">● Localhost Mode</span>
+          <div className="text-xs font-mono text-zinc-500 bg-white border border-zinc-200 rounded-md px-3 py-1.5 shadow-sm">
+            Status: <span className="text-emerald-600 font-semibold">● Localhost Mode</span>
           </div>
         </header>
 
         {/* Search and Filters Section */}
-        <section className="bg-zinc-900/40 border border-zinc-800/50 rounded-2xl p-6 backdrop-blur-md shadow-xl">
+        <section className="bg-white border border-zinc-200/80 rounded-2xl p-6 shadow-sm">
           <form onSubmit={e => handleSearch(e)} className="flex flex-col gap-4">
             <div className="flex flex-col md:flex-row gap-3">
               {/* Search input */}
               <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-zinc-500" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-zinc-400" />
                 <Input
                   type="text"
                   placeholder="Enter car model (e.g. Porsche 911 GT3 RS, Audi RS6 C8)..."
-                  className="pl-10 h-11 bg-zinc-950/80 border-zinc-800 focus-visible:ring-purple-500/50 focus-visible:border-purple-500 text-zinc-100 placeholder:text-zinc-500 rounded-xl"
+                  className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus-visible:ring-purple-500/10 focus-visible:border-purple-500 text-zinc-950 placeholder:text-zinc-400 rounded-xl"
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   disabled={isLoading}
@@ -337,7 +333,7 @@ export default function ClipFinder() {
               <Button 
                 type="submit" 
                 disabled={isLoading || !query.trim()}
-                className="h-11 px-6 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-medium shadow-lg shadow-purple-900/20 active:scale-[0.98] transition-transform duration-100"
+                className="h-11 px-6 rounded-xl bg-purple-600 hover:bg-purple-750 text-white font-medium shadow-sm hover:shadow active:scale-[0.98] transition-transform duration-100"
               >
                 {isLoading ? (
                   <>
@@ -356,16 +352,16 @@ export default function ClipFinder() {
             {/* Filter Dropdowns */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-zinc-400">Duration</label>
+                <label className="text-xs font-medium text-zinc-500">Duration</label>
                 <Select
                   value={duration}
                   onValueChange={(val) => setDuration(val as 'any' | 'short' | 'medium' | 'long')}
                   disabled={isLoading}
                 >
-                  <SelectTrigger className="bg-zinc-950/80 border-zinc-800 text-zinc-200 h-10 rounded-lg focus:ring-purple-500/30">
+                  <SelectTrigger className="bg-zinc-50 border-zinc-200 text-zinc-800 h-10 rounded-lg focus:ring-purple-500/10">
                     <SelectValue placeholder="Any duration" />
                   </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                  <SelectContent className="bg-white border-zinc-200 text-zinc-800">
                     <SelectItem value="any">Any duration</SelectItem>
                     <SelectItem value="short">Short (&lt; 4m)</SelectItem>
                     <SelectItem value="medium">Medium (4m - 20m)</SelectItem>
@@ -375,16 +371,16 @@ export default function ClipFinder() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-zinc-400">Upload Date</label>
+                <label className="text-xs font-medium text-zinc-500">Upload Date</label>
                 <Select
                   value={uploadedWithin}
                   onValueChange={(val) => setUploadedWithin(val as 'any' | 'year' | 'month')}
                   disabled={isLoading}
                 >
-                  <SelectTrigger className="bg-zinc-950/80 border-zinc-800 text-zinc-200 h-10 rounded-lg focus:ring-purple-500/30">
+                  <SelectTrigger className="bg-zinc-50 border-zinc-200 text-zinc-800 h-10 rounded-lg focus:ring-purple-500/10">
                     <SelectValue placeholder="Any time" />
                   </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                  <SelectContent className="bg-white border-zinc-200 text-zinc-800">
                     <SelectItem value="any">Any time</SelectItem>
                     <SelectItem value="month">Past 30 days</SelectItem>
                     <SelectItem value="year">Past year</SelectItem>
@@ -393,16 +389,16 @@ export default function ClipFinder() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-zinc-400">Sort By</label>
+                <label className="text-xs font-medium text-zinc-500">Sort By</label>
                 <Select
                   value={sort}
                   onValueChange={(val) => setSort(val as 'relevance' | 'date' | 'views')}
                   disabled={isLoading}
                 >
-                  <SelectTrigger className="bg-zinc-950/80 border-zinc-800 text-zinc-200 h-10 rounded-lg focus:ring-purple-500/30">
+                  <SelectTrigger className="bg-zinc-50 border-zinc-200 text-zinc-800 h-10 rounded-lg focus:ring-purple-500/10">
                     <SelectValue placeholder="Relevance" />
                   </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                  <SelectContent className="bg-white border-zinc-200 text-zinc-800">
                     <SelectItem value="relevance">Relevance</SelectItem>
                     <SelectItem value="date">Upload Date</SelectItem>
                     <SelectItem value="views">View Count</SelectItem>
@@ -413,8 +409,8 @@ export default function ClipFinder() {
 
             {/* Search History Chips */}
             {history.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-zinc-800/40 text-xs">
-                <div className="flex items-center gap-1 text-zinc-500">
+              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-zinc-100 text-xs">
+                <div className="flex items-center gap-1 text-zinc-400">
                   <History className="w-3 h-3" />
                   Recent:
                 </div>
@@ -424,7 +420,7 @@ export default function ClipFinder() {
                     type="button"
                     onClick={() => handleSearch(undefined, h)}
                     disabled={isLoading}
-                    className="px-2.5 py-1 bg-zinc-900 border border-zinc-850 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-850 hover:border-zinc-750 transition-colors rounded-full font-medium"
+                    className="px-2.5 py-1 bg-zinc-100 border border-zinc-200 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200 transition-colors rounded-full font-medium"
                   >
                     {h}
                   </button>
@@ -433,7 +429,7 @@ export default function ClipFinder() {
                   key="clear"
                   type="button"
                   onClick={clearHistory}
-                  className="text-zinc-650 hover:text-red-400 ml-auto flex items-center gap-0.5"
+                  className="text-zinc-400 hover:text-red-500 ml-auto flex items-center gap-0.5"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   Clear history
@@ -445,10 +441,10 @@ export default function ClipFinder() {
 
         {/* Error State */}
         {error && (
-          <div className="p-4 bg-red-950/20 border border-red-500/30 rounded-xl text-red-200 flex gap-3 text-sm animate-in fade-in duration-300">
-            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+          <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-800 flex gap-3 text-sm animate-in fade-in duration-300">
+            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
             <div className="whitespace-pre-line flex-1">
-              <span className="font-semibold text-red-300">Search Error:</span> {error}
+              <span className="font-semibold text-red-650">Search Error:</span> {error}
             </div>
           </div>
         )}
@@ -463,18 +459,18 @@ export default function ClipFinder() {
             {clips.length > 0 && (
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-zinc-200">
+                  <h2 className="text-lg font-semibold text-zinc-800">
                     Results ({clips.length})
                   </h2>
                   {isCached && (
-                    <Badge className="bg-emerald-950/40 text-emerald-400 hover:bg-emerald-950/40 border border-emerald-500/20 animate-pulse flex gap-1 items-center font-mono text-2xs px-1.5 py-0.5">
+                    <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border border-emerald-200 animate-pulse flex gap-1 items-center font-mono text-2xs px-1.5 py-0.5">
                       ⚡ Cached (Quota saved)
                     </Badge>
                   )}
                 </div>
                 <button
                   onClick={toggleSelectAll}
-                  className="text-xs text-purple-400 hover:text-purple-300 font-medium transition-colors"
+                  className="text-xs text-purple-600 hover:text-purple-700 font-medium transition-colors"
                 >
                   {selectedIds.size === clips.length ? 'Deselect All' : 'Select All'}
                 </button>
@@ -486,14 +482,14 @@ export default function ClipFinder() {
               // Skeleton Loader Grid
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {[...Array(6)].map((_, i) => (
-                  <Card key={i} className="bg-zinc-900/30 border-zinc-800/80 animate-pulse overflow-hidden">
-                    <div className="aspect-video bg-zinc-850" />
+                  <Card key={i} className="bg-white border-zinc-200 animate-pulse overflow-hidden">
+                    <div className="aspect-video bg-zinc-100" />
                     <CardContent className="p-4 space-y-3">
-                      <div className="h-4.5 bg-zinc-850 rounded w-5/6" />
-                      <div className="h-3.5 bg-zinc-850 rounded w-1/2" />
+                      <div className="h-4.5 bg-zinc-100 rounded w-5/6" />
+                      <div className="h-3.5 bg-zinc-100 rounded w-1/2" />
                       <div className="flex justify-between items-center pt-2">
-                        <div className="h-3.5 bg-zinc-850 rounded w-1/3" />
-                        <div className="h-3.5 bg-zinc-850 rounded w-1/4" />
+                        <div className="h-3.5 bg-zinc-100 rounded w-1/3" />
+                        <div className="h-3.5 bg-zinc-100 rounded w-1/4" />
                       </div>
                     </CardContent>
                   </Card>
@@ -509,10 +505,10 @@ export default function ClipFinder() {
                   return (
                     <Card
                       key={clip.videoId}
-                      className={`group overflow-hidden bg-zinc-900/40 hover:bg-zinc-900/60 border transition-all duration-300 relative select-none cursor-pointer flex flex-col h-full ${
+                      className={`group overflow-hidden bg-white hover:bg-zinc-50/30 border transition-all duration-300 relative select-none cursor-pointer flex flex-col h-full ${
                         isSelected
-                          ? 'border-purple-500/80 shadow-[0_0_15px_rgba(168,85,247,0.15)] bg-purple-950/10'
-                          : 'border-zinc-800/80 hover:border-zinc-700'
+                          ? 'border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.06)] bg-purple-50/10'
+                          : 'border-zinc-200 hover:border-zinc-300'
                       }`}
                       onClick={() => toggleSelect(clip.videoId)}
                     >
@@ -521,7 +517,7 @@ export default function ClipFinder() {
                         <Checkbox
                           checked={isSelected}
                           onCheckedChange={() => toggleSelect(clip.videoId)}
-                          className={`w-5 h-5 rounded-md border border-zinc-700 bg-zinc-950 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-500`}
+                          className={`w-5 h-5 rounded-md border-zinc-300 bg-white data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-500`}
                         />
                       </div>
 
@@ -529,25 +525,25 @@ export default function ClipFinder() {
                       {status && (
                         <div className="absolute top-3 right-3 z-20">
                           {status.status === 'queued' && (
-                            <Badge className="bg-zinc-800 text-zinc-300 border border-zinc-750 font-mono text-[10px] px-2 py-0.5">
+                            <Badge className="bg-zinc-100 text-zinc-600 border border-zinc-200 font-mono text-[10px] px-2 py-0.5">
                               Queued
                             </Badge>
                           )}
                           {status.status === 'downloading' && (
-                            <Badge className="bg-purple-600 text-white border border-purple-500 font-mono text-[10px] px-2 py-0.5 flex gap-1 items-center animate-pulse">
+                            <Badge className="bg-purple-100 text-purple-700 border border-purple-200 font-mono text-[10px] px-2 py-0.5 flex gap-1 items-center animate-pulse">
                               <Loader2 className="w-2.5 h-2.5 animate-spin" />
                               {status.progress !== undefined ? `${status.progress}%` : 'Down...'}
                             </Badge>
                           )}
                           {status.status === 'done' && (
-                            <Badge className="bg-emerald-950 text-emerald-400 border border-emerald-500/30 font-mono text-[10px] px-2 py-0.5 flex gap-1 items-center">
-                              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                            <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-200 font-mono text-[10px] px-2 py-0.5 flex gap-1 items-center">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                               Saved
                             </Badge>
                           )}
                           {status.status === 'failed' && (
-                            <Badge className="bg-red-950 text-red-400 border border-red-500/30 font-mono text-[10px] px-2 py-0.5 flex gap-1 items-center">
-                              <XCircle className="w-3 h-3 text-red-400" />
+                            <Badge className="bg-red-100 text-red-700 border border-red-200/60 font-mono text-[10px] px-2 py-0.5 flex gap-1 items-center">
+                              <XCircle className="w-3 h-3 text-red-600" />
                               Failed
                             </Badge>
                           )}
@@ -555,7 +551,7 @@ export default function ClipFinder() {
                       )}
 
                       {/* Thumbnail with overlay duration */}
-                      <div className="aspect-video relative overflow-hidden bg-zinc-950 shrink-0">
+                      <div className="aspect-video relative overflow-hidden bg-zinc-100 shrink-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={clip.thumbnailUrl}
@@ -564,10 +560,10 @@ export default function ClipFinder() {
                           loading="lazy"
                         />
                         {/* Shimmer Overlay on Selection */}
-                        <div className={`absolute inset-0 bg-purple-500/10 transition-opacity duration-300 ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
+                        <div className={`absolute inset-0 bg-purple-500/5 transition-opacity duration-300 ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
 
                         {/* Duration Badge */}
-                        <span className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/80 backdrop-blur-sm text-zinc-100 text-2xs font-mono font-semibold rounded-md tracking-wider border border-zinc-800/50 z-10">
+                        <span className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/75 backdrop-blur-sm text-zinc-100 text-2xs font-mono font-semibold rounded-md tracking-wider border border-zinc-800/20 z-10">
                           {clip.durationLabel}
                         </span>
 
@@ -577,31 +573,31 @@ export default function ClipFinder() {
                           target="_blank"
                           rel="noopener noreferrer"
                           title="Open in YouTube"
-                          className="absolute bottom-2 left-2 p-1.5 bg-black/60 hover:bg-black/90 backdrop-blur-sm rounded-md border border-zinc-800/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+                          className="absolute bottom-2 left-2 p-1.5 bg-white/90 hover:bg-white backdrop-blur-sm rounded-md border border-zinc-200 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
                           onClick={e => e.stopPropagation()}
                         >
-                          <ExternalLink className="w-3.5 h-3.5 text-zinc-300 hover:text-white" />
+                          <ExternalLink className="w-3.5 h-3.5 text-zinc-500 hover:text-zinc-800" />
                         </a>
                       </div>
 
                       {/* Content Card details */}
-                      <CardContent className="p-4 flex flex-col flex-1 justify-between gap-3 min-w-0">
+                      <CardContent className="p-4 flex flex-col flex-1 justify-between gap-3 min-w-0 bg-white">
                         <div className="space-y-1">
                           {/* Title (clamp to 2 lines) */}
                           <h3
-                            className="font-medium text-sm leading-snug text-zinc-100 group-hover:text-purple-400 transition-colors line-clamp-2"
+                            className="font-medium text-sm leading-snug text-zinc-800 group-hover:text-purple-600 transition-colors line-clamp-2"
                             title={clip.title}
                           >
                             {clip.title}
                           </h3>
                           {/* Channel Title */}
-                          <p className="text-xs text-zinc-400 font-medium truncate flex items-center gap-1">
+                          <p className="text-xs text-zinc-500 font-medium truncate flex items-center gap-1">
                             {clip.channelTitle}
                           </p>
                         </div>
 
                         {/* Stats Footer inside Card */}
-                        <div className="flex items-center justify-between text-2xs font-mono text-zinc-500 border-t border-zinc-850 pt-2 shrink-0">
+                        <div className="flex items-center justify-between text-2xs font-mono text-zinc-450 border-t border-zinc-100 pt-2 shrink-0">
                           <span>{formatViews(clip.viewCount)} views</span>
                           <span>{formatRelativeDate(clip.publishedAt)}</span>
                         </div>
@@ -612,20 +608,20 @@ export default function ClipFinder() {
               </div>
             ) : (
               // Empty search / Welcome State
-              <div className="text-center py-16 px-4 bg-zinc-900/20 border border-zinc-800/40 rounded-2xl flex flex-col items-center gap-4">
-                <div className="p-4 bg-zinc-900 rounded-full border border-zinc-800 text-zinc-500">
+              <div className="text-center py-16 px-4 bg-white border border-zinc-200 rounded-2xl flex flex-col items-center gap-4 shadow-sm">
+                <div className="p-4 bg-zinc-50 rounded-full border border-zinc-100 text-zinc-400">
                   <FileVideo2 className="w-8 h-8" />
                 </div>
                 {hasSearched ? (
                   <div>
-                    <h3 className="text-base font-semibold text-zinc-300">No clips found</h3>
+                    <h3 className="text-base font-semibold text-zinc-800">No clips found</h3>
                     <p className="text-sm text-zinc-500 max-w-sm mx-auto mt-1">
                       No results matched the model name and filters. Try adjusting your duration or upload date.
                     </p>
                   </div>
                 ) : (
                   <div>
-                    <h3 className="text-base font-semibold text-zinc-300">Start Finding Clips</h3>
+                    <h3 className="text-base font-semibold text-zinc-800">Start Finding Clips</h3>
                     <p className="text-sm text-zinc-500 max-w-sm mx-auto mt-1">
                       Enter a car model to begin searching YouTube for clean source footage.
                     </p>
@@ -637,15 +633,15 @@ export default function ClipFinder() {
 
           {/* Download Logs Monitor (Shows up when there are active/past download logs) */}
           {Object.keys(downloadStatus).length > 0 && (
-            <aside className="w-full lg:w-80 shrink-0 bg-zinc-900/40 border border-zinc-800/60 rounded-2xl p-5 backdrop-blur-md sticky top-6 shadow-xl space-y-4">
-              <div className="flex justify-between items-center border-b border-zinc-800 pb-2.5">
-                <h3 className="font-semibold text-sm text-zinc-200 flex items-center gap-2">
-                  <FolderOpen className="w-4 h-4 text-purple-400" />
+            <aside className="w-full lg:w-80 shrink-0 bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm sticky top-6 space-y-4">
+              <div className="flex justify-between items-center border-b border-zinc-100 pb-2.5">
+                <h3 className="font-semibold text-sm text-zinc-800 flex items-center gap-2">
+                  <FolderOpen className="w-4 h-4 text-purple-600" />
                   Downloads Log
                 </h3>
                 <button
                   onClick={() => setDownloadStatus({})}
-                  className="text-2xs text-zinc-500 hover:text-zinc-300 font-mono transition-colors"
+                  className="text-2xs text-zinc-400 hover:text-zinc-600 font-mono transition-colors"
                 >
                   Clear Logs
                 </button>
@@ -660,17 +656,17 @@ export default function ClipFinder() {
                   return (
                     <div
                       key={status.videoId}
-                      className="p-3 bg-zinc-950/80 border border-zinc-850 rounded-xl space-y-2 text-xs"
+                      className="p-3 bg-zinc-50/80 border border-zinc-200/60 rounded-xl space-y-2 text-xs"
                     >
                       <div className="flex justify-between items-start gap-2">
-                        <span className="font-medium text-zinc-200 truncate flex-1" title={title}>
+                        <span className="font-medium text-zinc-800 truncate flex-1" title={title}>
                           {title}
                         </span>
                         <a
                           href={`https://youtube.com/watch?v=${status.videoId}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-zinc-650 hover:text-zinc-400 inline-flex"
+                          className="text-zinc-400 hover:text-zinc-650 inline-flex"
                         >
                           <ExternalLink className="w-3 h-3" />
                         </a>
@@ -679,13 +675,13 @@ export default function ClipFinder() {
                       {/* Progress bar or info message */}
                       {status.status === 'downloading' && (
                         <div className="space-y-1.5">
-                          <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                          <div className="w-full bg-zinc-200 h-1.5 rounded-full overflow-hidden">
                             <div
-                              className="bg-purple-500 h-full transition-all duration-300"
+                              className="bg-purple-600 h-full transition-all duration-300"
                               style={{ width: `${status.progress || 0}%` }}
                             />
                           </div>
-                          <div className="flex justify-between text-3xs font-mono text-purple-400 font-medium">
+                          <div className="flex justify-between text-3xs font-mono text-purple-600 font-medium">
                             <span>Downloading...</span>
                             <span>{status.progress || 0}%</span>
                           </div>
@@ -693,17 +689,17 @@ export default function ClipFinder() {
                       )}
 
                       {status.status === 'queued' && (
-                        <p className="text-3xs font-mono text-zinc-500">Queued in download sequence...</p>
+                        <p className="text-3xs font-mono text-zinc-450">Queued in download sequence...</p>
                       )}
 
                       {status.status === 'done' && (
-                        <div className="space-y-1 text-3xs font-mono text-emerald-400">
+                        <div className="space-y-1 text-3xs font-mono text-emerald-700 font-medium">
                           <p className="flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
                             Saved successfully
                           </p>
                           {status.filePath && (
-                            <p className="text-zinc-500 select-all truncate bg-zinc-900 px-1 py-0.5 rounded" title={status.filePath}>
+                            <p className="text-zinc-500 select-all truncate bg-white border border-zinc-200 px-1 py-0.5 rounded" title={status.filePath}>
                               {status.filePath}
                             </p>
                           )}
@@ -711,13 +707,13 @@ export default function ClipFinder() {
                       )}
 
                       {status.status === 'failed' && (
-                        <div className="text-3xs font-mono text-red-400 space-y-1 leading-normal">
+                        <div className="text-3xs font-mono text-red-700 space-y-1 leading-normal font-medium">
                           <p className="flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-650" />
                             Download failed
                           </p>
                           {status.error && (
-                            <p className="text-zinc-500 bg-red-950/20 px-1 py-0.5 rounded break-words select-all max-h-16 overflow-y-auto">
+                            <p className="text-zinc-500 bg-red-50 border border-red-100 px-1 py-0.5 rounded break-words select-all max-h-16 overflow-y-auto">
                               {status.error}
                             </p>
                           )}
@@ -737,24 +733,24 @@ export default function ClipFinder() {
       {/* Floating Sticky Actions Bar (appears when items are selected) */}
       {selectedIds.size > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <div className="bg-zinc-900/90 backdrop-blur-md border border-zinc-800 shadow-2xl rounded-full px-5 py-3.5 flex items-center gap-5">
-            <span className="text-sm font-semibold text-zinc-100 whitespace-nowrap">
+          <div className="bg-white/95 border border-zinc-200/80 shadow-2xl rounded-full px-5 py-3.5 flex items-center gap-5">
+            <span className="text-sm font-semibold text-zinc-800 whitespace-nowrap">
               {selectedIds.size} {selectedIds.size === 1 ? 'clip' : 'clips'} selected
             </span>
             
-            <div className="h-4.5 w-px bg-zinc-800" />
+            <div className="h-4.5 w-px bg-zinc-200" />
 
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-full h-9 border-zinc-850 hover:bg-zinc-800 hover:border-zinc-700 text-zinc-200 text-xs font-semibold px-4 cursor-pointer"
+                className="rounded-full h-9 border-zinc-200 hover:bg-zinc-50 hover:border-zinc-300 text-zinc-700 text-xs font-semibold px-4 cursor-pointer"
                 onClick={handleCopyUrls}
                 disabled={isDownloading}
               >
                 {copied ? (
                   <>
-                    <Check className="w-3.5 h-3.5 mr-1.5 text-emerald-400" />
+                    <Check className="w-3.5 h-3.5 mr-1.5 text-emerald-650" />
                     Copied!
                   </>
                 ) : (
@@ -767,7 +763,7 @@ export default function ClipFinder() {
 
               <Button
                 size="sm"
-                className="rounded-full h-9 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold px-4 shadow-lg shadow-purple-900/20 cursor-pointer"
+                className="rounded-full h-9 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-4 shadow-md shadow-purple-200 cursor-pointer"
                 onClick={handleDownloadSelected}
                 disabled={isDownloading}
               >
