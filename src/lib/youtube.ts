@@ -1,4 +1,4 @@
-import { Clip, SearchRequest } from './types';
+import { Clip, SearchRequest, Chapter } from './types';
 
 export function parseISO8601Duration(durationStr: string): number {
   const hoursMatch = durationStr.match(/(\d+)H/);
@@ -21,6 +21,41 @@ export function formatDuration(seconds: number): string {
     return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   }
   return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+export function parseChapters(description: string, durationSeconds?: number): Chapter[] {
+  if (!description) return [];
+
+  const chapters: Chapter[] = [];
+  const lines = description.split(/\r?\n/);
+
+  // Matches standard timestamp + label lines leniently
+  const regex = /(?:^|\s|\[|\()(?:(\d{1,2}):)?(\d{1,2}):(\d{2})(?:\]|\)|\b)(?:\s*[-–—:|.]\s*|\s+)(.+)$/;
+
+  for (const line of lines) {
+    const match = line.match(regex);
+    if (match) {
+      const hours = match[1] ? parseInt(match[1], 10) : 0;
+      const minutes = parseInt(match[2], 10);
+      const seconds = parseInt(match[3], 10);
+      const label = match[4].trim();
+
+      const timeSeconds = hours * 3600 + minutes * 60 + seconds;
+      const timeLabel = (match[0].match(/(?:(\d{1,2}):)?\d{1,2}:\d{2}/) || [])[0] || `${hours ? hours + ':' : ''}${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+      if (label && (durationSeconds === undefined || timeSeconds <= durationSeconds)) {
+        if (!chapters.some(c => c.timeSeconds === timeSeconds)) {
+          chapters.push({
+            timeSeconds,
+            timeLabel,
+            label,
+          });
+        }
+      }
+    }
+  }
+
+  return chapters.sort((a, b) => a.timeSeconds - b.timeSeconds);
 }
 
 export async function searchYouTube(params: SearchRequest): Promise<{ clips: Clip[]; nextPageToken?: string }> {
@@ -115,6 +150,7 @@ export async function searchYouTube(params: SearchRequest): Promise<{ clips: Cli
       title?: string;
       channelTitle?: string;
       publishedAt?: string;
+      description?: string;
       thumbnails?: {
         medium?: { url: string };
         high?: { url: string };
@@ -154,6 +190,9 @@ export async function searchYouTube(params: SearchRequest): Promise<{ clips: Cli
       thumbnails.default?.url ||
       '';
 
+    const description = item.snippet?.description || '';
+    const chapters = parseChapters(description, durationSeconds);
+
     clips.push({
       videoId: id,
       title: item.snippet?.title || '',
@@ -164,6 +203,7 @@ export async function searchYouTube(params: SearchRequest): Promise<{ clips: Cli
       durationLabel: formatDuration(durationSeconds),
       viewCount,
       url: `https://www.youtube.com/watch?v=${id}`,
+      chapters,
     });
   }
 

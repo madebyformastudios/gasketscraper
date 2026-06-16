@@ -18,7 +18,9 @@ import {
   Play,
   Star,
   Info,
-  Sparkles
+  Sparkles,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,9 +34,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Clip, SearchResponse, DownloadStatus } from '@/lib/types';
+import { Clip, SearchResponse, DownloadStatus, CreatorLead } from '@/lib/types';
 
 const SEARCH_CHIPS = ['4K', 'POV', 'walkaround', 'review', 'driving', 'exhaust', 'interior'];
+
+function InstagramIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+    </svg>
+  );
+}
 
 export default function ClipFinder() {
   // Search state
@@ -67,6 +90,19 @@ export default function ClipFinder() {
 
   // Modal Preview state
   const [previewVideo, setPreviewVideo] = useState<Clip | null>(null);
+  const [playerStartTime, setPlayerStartTime] = useState<number | null>(null);
+
+  // Instagram Discovery states
+  const [instagramModel, setInstagramModel] = useState('');
+  const [hashtags, setHashtags] = useState<string[]>([]);
+  const [creators, setCreators] = useState<CreatorLead[]>([]);
+  const [isHashtagsLoading, setIsHashtagsLoading] = useState(false);
+  const [isCreatorsLoading, setIsCreatorsLoading] = useState(false);
+  const [hashtagsError, setHashtagsError] = useState<string | null>(null);
+  const [creatorsError, setCreatorsError] = useState<string | null>(null);
+  const [copiedHashtags, setCopiedHashtags] = useState(false);
+  const [instagramCached, setInstagramCached] = useState({ hashtags: false, creators: false });
+  const [isInstagramPanelOpen, setIsInstagramPanelOpen] = useState(true);
 
   // Download settings
   const [downloadQuality, setDownloadQuality] = useState<'best (≤1080p)' | '720p' | 'best available'>('best (≤1080p)');
@@ -119,6 +155,71 @@ export default function ClipFinder() {
   const saveShortlist = (newShortlist: Clip[]) => {
     setShortlist(newShortlist);
     localStorage.setItem('clip_finder_shortlist', JSON.stringify(newShortlist));
+  };
+
+  const loadInstagramDiscovery = async (model: string) => {
+    if (!model || !model.trim()) return;
+    const cleanModel = model.trim();
+    setInstagramModel(cleanModel);
+    
+    setHashtags([]);
+    setCreators([]);
+    setHashtagsError(null);
+    setCreatorsError(null);
+    setInstagramCached({ hashtags: false, creators: false });
+
+    setIsHashtagsLoading(true);
+    fetch('/api/suggest-hashtags', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: cleanModel }),
+    })
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to fetch hashtags');
+        }
+        setHashtags(data.hashtags || []);
+        setInstagramCached(prev => ({ ...prev, hashtags: !!data.cached }));
+      })
+      .catch(err => {
+        setHashtagsError(err.message || 'Failed to fetch hashtags');
+      })
+      .finally(() => setIsHashtagsLoading(false));
+
+    setIsCreatorsLoading(true);
+    fetch('/api/creators', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: cleanModel }),
+    })
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to fetch creators');
+        }
+        setCreators(data.creators || []);
+        setInstagramCached(prev => ({ ...prev, creators: !!data.cached }));
+        if (!data.cached) {
+          trackQuotaUsage(100);
+        }
+      })
+      .catch(err => {
+        setCreatorsError(err.message || 'Failed to fetch creators');
+      })
+      .finally(() => setIsCreatorsLoading(false));
+  };
+
+  const handleCopyAllHashtags = async () => {
+    if (hashtags.length === 0) return;
+    const allTags = hashtags.join(' ');
+    try {
+      await navigator.clipboard.writeText(allTags);
+      setCopiedHashtags(true);
+      setTimeout(() => setCopiedHashtags(false), 2000);
+    } catch {
+      alert('Failed to copy hashtags.');
+    }
   };
 
   const toggleShortlist = (clip: Clip) => {
@@ -202,6 +303,9 @@ export default function ClipFinder() {
       if (customQuery !== undefined) {
         setQuery(customQuery);
       }
+      
+      // Load Instagram Discovery helper data
+      loadInstagramDiscovery(baseQuery);
       
       // Quota tracking: API hit costs 101 units (100 search + 1 enrich)
       if (!resData.cached) {
@@ -809,8 +913,8 @@ export default function ClipFinder() {
 
                         {/* Inline Preview Play */}
                         <button
-                          onClick={() => setPreviewVideo(clip)}
-                          className="p-1.5 bg-white/95 border border-zinc-200 rounded-lg text-zinc-500 hover:text-purple-600 hover:bg-white shadow-sm transition-colors"
+                          onClick={() => { setPlayerStartTime(null); setPreviewVideo(clip); }}
+                          className="p-1.5 bg-white/95 border border-zinc-200 rounded-lg text-zinc-500 hover:text-purple-650 hover:bg-white shadow-sm transition-colors"
                           title="Open Video Preview"
                         >
                           <Play className="w-3.5 h-3.5 fill-current" />
@@ -862,7 +966,14 @@ export default function ClipFinder() {
 
                         {/* Download status indication badge inside results card */}
                         <div className="flex items-center justify-between text-2xs font-mono text-zinc-450 border-t border-zinc-105 pt-2 shrink-0">
-                          <span>{formatViews(clip.viewCount)} views</span>
+                          <div className="flex items-center gap-1.5 min-w-0 truncate">
+                            <span>{formatViews(clip.viewCount)} views</span>
+                            {clip.chapters && clip.chapters.length > 0 && (
+                              <Badge className="bg-purple-50 border border-purple-100 text-purple-700 text-3xs px-1 py-0 shadow-none shrink-0 font-medium pointer-events-none">
+                                {clip.chapters.length} ch
+                              </Badge>
+                            )}
+                          </div>
                           {status ? (
                             <span className={`font-semibold ${
                               status.status === 'done' ? 'text-emerald-600' : 
@@ -936,6 +1047,173 @@ export default function ClipFinder() {
 
           {/* Persistent Shortlist panel sidebar (Section E) & Downloads log */}
           <aside className="w-full lg:w-80 shrink-0 flex flex-col gap-6 sticky top-6">
+            
+            {/* Instagram Discovery Helper (Section B) */}
+            {hasSearched && instagramModel && (
+              <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm space-y-4">
+                <div className="flex justify-between items-center border-b border-zinc-100 pb-2.5">
+                  <h3 className="font-semibold text-sm text-zinc-800 flex items-center gap-2">
+                    <InstagramIcon className="w-4 h-4 text-purple-600" />
+                    Instagram Helper (manual)
+                  </h3>
+                  <button
+                    onClick={() => setIsInstagramPanelOpen(!isInstagramPanelOpen)}
+                    className="text-zinc-400 hover:text-zinc-650 transition-colors p-0.5 rounded"
+                  >
+                    {isInstagramPanelOpen ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+
+                {isInstagramPanelOpen && (
+                  <div className="space-y-4 animate-in fade-in duration-200">
+                    {/* Model Info */}
+                    <div className="text-2xs text-zinc-450 font-medium bg-zinc-50 border border-zinc-150 rounded-lg p-2.5">
+                      Target model: <span className="font-semibold text-zinc-700">{instagramModel}</span>
+                    </div>
+
+                    {/* Hashtags Segment */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-2xs font-bold text-zinc-700 uppercase tracking-wide flex items-center gap-1">
+                          Hashtags
+                          {instagramCached.hashtags && (
+                            <span className="font-mono text-3xs text-emerald-600 font-semibold lowercase">⚡ cached</span>
+                          )}
+                        </span>
+                        {hashtags.length > 0 && (
+                          <button
+                            onClick={handleCopyAllHashtags}
+                            className="text-3xs text-purple-600 hover:text-purple-750 font-bold flex items-center gap-1 cursor-pointer"
+                          >
+                            {copiedHashtags ? (
+                              <>
+                                <Check className="w-3 h-3 text-emerald-600" />
+                                Copied!
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3" />
+                                Copy All
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+
+                      {isHashtagsLoading ? (
+                        <div className="flex items-center gap-2 py-4 text-xs text-zinc-450">
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-600" />
+                          Generating hashtags...
+                        </div>
+                      ) : hashtagsError ? (
+                        <p className="text-3xs text-red-500 font-medium bg-red-50/50 border border-red-100 rounded-lg p-2">
+                          {hashtagsError}
+                        </p>
+                      ) : hashtags.length > 0 ? (
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-1 bg-zinc-50 border border-zinc-150 rounded-xl">
+                            {hashtags.map((tag, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => {
+                                  navigator.clipboard.writeText(tag);
+                                }}
+                                className="px-2 py-0.5 bg-white hover:bg-zinc-100 border border-zinc-200 text-3xs font-medium text-zinc-700 rounded-md transition-colors cursor-pointer select-all"
+                                title="Click to copy single hashtag"
+                              >
+                                {tag}
+                              </button>
+                            ))}
+                          </div>
+                          <p className="text-4xs text-zinc-400 italic">
+                            Suggested candidates — not verified for live volume. Check on Instagram.
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-3xs text-zinc-450 italic py-2">No hashtag suggestions found.</p>
+                      )}
+                    </div>
+
+                    {/* Creator Leads Segment */}
+                    <div className="space-y-2 border-t border-zinc-100 pt-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-2xs font-bold text-zinc-700 uppercase tracking-wide flex items-center gap-1 group relative">
+                          Creator Leads
+                          {instagramCached.creators && (
+                            <span className="font-mono text-3xs text-emerald-600 font-semibold lowercase">⚡ cached</span>
+                          )}
+                          <Info className="w-3 h-3 text-zinc-450 shrink-0 cursor-help" />
+                          <span className="absolute bottom-full left-0 mb-1 bg-zinc-900 text-white font-mono text-[9px] py-1 px-2 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 w-48 text-center z-15">
+                            Real channels. Channel search costs ~100 API quota units
+                          </span>
+                        </span>
+                      </div>
+
+                      {isCreatorsLoading ? (
+                        <div className="flex items-center gap-2 py-4 text-xs text-zinc-450">
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-600" />
+                          Searching channels...
+                        </div>
+                      ) : creatorsError ? (
+                        <p className="text-3xs text-red-500 font-medium bg-red-50/50 border border-red-100 rounded-lg p-2">
+                          {creatorsError}
+                        </p>
+                      ) : creators.length > 0 ? (
+                        <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                          {creators.map(creator => (
+                            <div
+                              key={creator.channelId}
+                              className="flex gap-2 p-2 bg-zinc-50 border border-zinc-150 rounded-xl relative group/creator text-2xs"
+                            >
+                              {creator.thumbnail && (
+                                <img
+                                  src={creator.thumbnail}
+                                  alt={creator.title}
+                                  className="w-8 h-8 rounded-full object-cover border border-zinc-200 shrink-0"
+                                />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-bold text-zinc-800 truncate" title={creator.title}>
+                                  {creator.title}
+                                </h4>
+                                <p className="text-3xs text-zinc-450 line-clamp-1 leading-normal" title={creator.description}>
+                                  {creator.description}
+                                </p>
+                                
+                                <div className="flex items-center gap-2.5 mt-1.5 font-semibold font-mono">
+                                  <a
+                                    href={creator.channelUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-purple-650 hover:text-purple-750 inline-flex items-center gap-0.5"
+                                  >
+                                    YouTube <ExternalLink className="w-2.5 h-2.5" />
+                                  </a>
+                                  <a
+                                    href={`https://www.google.com/search?q=site:instagram.com "${encodeURIComponent(creator.title)}"`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-zinc-550 hover:text-zinc-850 inline-flex items-center gap-0.5"
+                                  >
+                                    Instagram Search <ExternalLink className="w-2.5 h-2.5" />
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-3xs text-zinc-450 italic py-2">No creator leads found.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             
             {/* Shortlist Sidebar Card */}
             <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm space-y-4">
@@ -1220,7 +1498,8 @@ export default function ClipFinder() {
             {/* Embedded youtube-nocookie Player */}
             <div className="aspect-video bg-black relative shrink-0">
               <iframe
-                src={`https://www.youtube-nocookie.com/embed/${previewVideo.videoId}?autoplay=1`}
+                key={`${previewVideo.videoId}-${playerStartTime || 0}`}
+                src={`https://www.youtube-nocookie.com/embed/${previewVideo.videoId}?autoplay=1${playerStartTime !== null ? `&start=${playerStartTime}` : ''}`}
                 title={previewVideo.title}
                 className="w-full h-full border-0 absolute inset-0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -1239,6 +1518,33 @@ export default function ClipFinder() {
                   <span>{formatRelativeDate(previewVideo.publishedAt)}</span>
                 </div>
               </div>
+
+              {/* Chapters list if present */}
+              {previewVideo.chapters && previewVideo.chapters.length > 0 && (
+                <div className="border-t border-zinc-100 pt-3 flex flex-col gap-1.5">
+                  <h4 className="text-2xs font-bold text-zinc-700 tracking-wide uppercase">Chapters</h4>
+                  <div className="flex flex-col gap-1 max-h-32 overflow-y-auto pr-1">
+                    {previewVideo.chapters.map((chapter, index) => {
+                      const isCurrent = playerStartTime === chapter.timeSeconds;
+                      return (
+                        <button
+                          key={index}
+                          type="button"
+                          className={`text-left text-xs px-2.5 py-1.5 rounded-lg border transition-all flex justify-between items-center ${
+                            isCurrent
+                              ? 'bg-purple-50 border-purple-200 text-purple-700 font-semibold shadow-xs'
+                              : 'bg-zinc-50 hover:bg-zinc-100 border-zinc-200 text-zinc-750 hover:text-zinc-900'
+                          }`}
+                          onClick={() => setPlayerStartTime(chapter.timeSeconds)}
+                        >
+                          <span className="truncate pr-4">{chapter.label}</span>
+                          <span className="font-mono text-2xs opacity-80 shrink-0">{chapter.timeLabel}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-4 mt-2">

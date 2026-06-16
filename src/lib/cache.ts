@@ -3,8 +3,9 @@ import path from 'path';
 import { Clip, SearchRequest } from './types';
 
 interface CacheEntry {
-  clips: Clip[];
+  clips?: Clip[];
   nextPageToken?: string;
+  data?: unknown;
   fetchedAt: number; // timestamp in ms
 }
 
@@ -70,7 +71,7 @@ export function getCachedSearch(params: SearchRequest): { clips: Clip[]; nextPag
   }
 
   return {
-    clips: entry.clips,
+    clips: entry.clips || [],
     nextPageToken: entry.nextPageToken,
   };
 }
@@ -81,6 +82,39 @@ export function setCachedSearch(params: SearchRequest, clips: Clip[], nextPageTo
   data[key] = {
     clips,
     nextPageToken,
+    fetchedAt: Date.now(),
+  };
+  writeCacheFile(data);
+}
+
+// 30 days TTL (720 hours) default for suggestions and creators
+const SUGGESTION_TTL_HOURS = parseInt(process.env.CACHE_SUGGESTION_TTL_HOURS || '720', 10);
+const SUGGESTION_TTL_MS = SUGGESTION_TTL_HOURS * 60 * 60 * 1000;
+
+export function getCachedSuggestion(model: string, type: 'hashtags' | 'creators'): unknown {
+  const data = readCacheFile();
+  const key = `${type}:${model.trim().toLowerCase()}`;
+  const entry = data[key];
+
+  if (!entry) {
+    return null;
+  }
+
+  // Check TTL expiry
+  if (Date.now() - entry.fetchedAt > SUGGESTION_TTL_MS) {
+    delete data[key];
+    writeCacheFile(data);
+    return null;
+  }
+
+  return entry.data;
+}
+
+export function setCachedSuggestion(model: string, type: 'hashtags' | 'creators', value: unknown): void {
+  const data = readCacheFile();
+  const key = `${type}:${model.trim().toLowerCase()}`;
+  data[key] = {
+    data: value,
     fetchedAt: Date.now(),
   };
   writeCacheFile(data);

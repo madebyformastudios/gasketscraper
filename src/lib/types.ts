@@ -1,3 +1,17 @@
+export interface Chapter {
+  timeSeconds: number;
+  timeLabel: string;
+  label: string;
+}
+
+export interface CreatorLead {
+  channelId: string;
+  title: string;
+  description: string;
+  thumbnail: string;
+  channelUrl: string;
+}
+
 export type Clip = {
   videoId: string;
   title: string;
@@ -8,6 +22,7 @@ export type Clip = {
   durationLabel: string;     // "12:34" or "1:02:33"
   viewCount: number;
   url: string;               // https://www.youtube.com/watch?v=<id>
+  chapters?: Chapter[];
 };
 
 export interface SearchRequest {
